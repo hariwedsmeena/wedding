@@ -1,0 +1,65 @@
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to bottom, #ffecd2, #fcb69f);
+    color: #4a2c2a;
+    text-align: center;
+}
+
+.welcome {
+    padding: 50px;
+    background: url('https://www.transparenttextures.com/patterns/arabesque.png');
+    animation: fadeIn 2s ease-in;
+}
+
+.welcome h1 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 4em;
+    color: #d4af37; /* Gold */
+}
+
+section {
+    padding: 40kovápx;
+}
+
+h2 {
+    color: #a11919; /* Maroon */
+    font-size: 2em;
+}
+
+.rsvp form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 300px;
+    margin: 20px auto;
+}
+
+button {
+    background: #a11919;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.gallery-images {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+img {
+    border-radius: 10px;
+    border: 2px solid #d4af37;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (max-width: 600px) {
+    .welcome h1 { font-size: 2.5em; }
+    .gallery-images { flex-direction: column; }
+}
