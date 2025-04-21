@@ -3,41 +3,1230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hari & Meena's Wedding</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins&display=swap" rel="stylesheet">
+    <title>Meena & Hari's Wedding</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Playfair+Display:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #fff9f6;
+            color: #4a2c12;
+            overflow-x: hidden;
+        }
+
+        /* ===== Main Container ===== */
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== Main Screen ===== */
+        .main-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: url('https://images.unsplash.com/photo-1580894732444-8ecded7900cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.8s ease;
+            z-index: 2;
+        }
+
+        .main-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: white;
+            padding: 20px;
+            animation: fadeIn 1.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-family: 'Tangerine', cursive;
+            font-size: 6rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+            animation: float 3s ease-in-out infinite;
+            color: #ffd700;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .names {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+            color: white;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            background: transparent;
+            color: white;
+            border: 2px solid #ffd700;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin: 10px;
+            outline: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: rgba(255, 215, 0, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.4), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::after {
+            left: 100%;
+        }
+
+        /* ===== Details Screen ===== */
+        .details-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+            background: url('https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center/cover;
+            background-attachment: fixed;
+            transform: translateY(100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.8s ease;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            padding-bottom: 40px;
+        }
+
+        .details-screen.active {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+            z-index: 2;
+        }
+
+        .details-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+
+        .details-content {
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 253, 250, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 700px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            animation: zoomIn 0.8s ease;
+            border: 1px solid #d4a373;
+        }
+
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .couple-info h2 {
+            font-family: 'Tangerine', cursive;
+            font-size: 4rem;
+            color: #b54b00;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .wedding-info {
+            margin: 20px 0;
+        }
+
+        .wedding-info p {
+            margin: 15px 0;
+            font-size: 1.2rem;
+            color: #5a3e1f;
+        }
+
+        .wedding-info strong {
+            color: #8b4513;
+            font-weight: 600;
+        }
+
+        .timeline {
+            text-align: left;
+            margin: 25px 0;
+            padding: 15px;
+            background: rgba(255, 248, 240, 0.8);
+            border-radius: 10px;
+            border-left: 4px solid #d4a373;
+        }
+
+        .timeline h3 {
+            font-family: 'Playfair Display', serif;
+            color: #8b4513;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .timeline-item {
+            margin: 12px 0;
+            display: flex;
+        }
+
+        .timeline-time {
+            font-weight: 600;
+            color: #b54b00;
+            min-width: 150px;
+        }
+
+        .timeline-event {
+            color: #5a3e1f;
+        }
+
+        /* ===== Action Buttons (Round Logos) ===== */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px; /* Increased for better spacing */
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(45deg, #d4a373, #f3c892);
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(45deg, #f3c892, #d4a373);
+        }
+
+        .action-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+
+        .action-btn:hover::after {
+            left: 100%;
+        }
+
+        /* Custom RSVP SVG Icon */
+        .rsvp-icon {
+            width: 36px;
+            height: 36px;
+        }
+
+        /* Greetings Button */
+        .greetings-btn {
+            padding: 15px 40px;
+            background: linear-gradient(45deg, #b54b00, #d2691e);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            max-width: 250px;
+        }
+
+        .greetings-btn i {
+            margin-right: 8px;
+        }
+
+        .greetings-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(45deg, #d2691e, #b54b00);
+        }
+
+        /* ===== Modals ===== */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            transform: scale(0.8) translateY(50px) rotate(2deg);
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1) translateY(0) rotate(0deg);
+            opacity: 1;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #888;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        /* ===== E-Gift Modal ===== */
+        .qr-code {
+            margin: 20px auto;
+            max-width: 200px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.4s ease;
+        }
+
+        .qr-code.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .qr-code img {
+            width: 100%;
+            height: auto;
+            border: 10px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .recipient-btns {
+            display: flex;
+            justify-content: center;
+            margin: 25px 0;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .recipient-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #d4a373, #f3c892);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .recipient-btn i {
+            margin-right: 8px;
+        }
+
+        .recipient-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ===== Map Modal ===== */
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #d4a373;
+        }
+
+        .map-options {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .map-option {
+            padding: 12px 25px;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #8b4513, #a0522d);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .map-option i {
+            margin-right: 8px;
+        }
+
+        .map-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ===== Contact Modal ===== */
+        .contact-list {
+            text-align: left;
+            margin: 25px 0;
+        }
+
+        .contact-list h3 {
+            margin: 20px 0 10px;
+            color: #b54b00;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+        }
+
+        .contact-item {
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .contact-item a {
+            color: #5a3e1f;
+            text-decoration: none;
+            margin-left: 10px;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .contact-item a:hover {
+            color: #d2691e;
+        }
+
+        .whatsapp-icon {
+            width: 20px;
+            height: 20px;
+            margin-left: 8px;
+        }
+
+        /* ===== RSVP Modal ===== */
+        .rsvp-form {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #5a3e1f;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d4a373;
+            border-radius: 5px;
+            font-family: 'Montserrat', sans-serif;
+            background: #fffaf5;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(45deg, #b54b00, #d2691e);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(45deg, #d2691e, #b54b00);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ===== Greetings Modal ===== */
+        .greetings-form {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .background-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .bg-option {
+            height: 80px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .bg-option:hover {
+            transform: scale(1.05);
+        }
+
+        .bg-option.selected {
+            border: 2px solid #b54b00;
+            box-shadow: 0 0 0 3px rgba(181, 75, 0, 0.3);
+        }
+
+        .font-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .font-option {
+            padding: 8px 12px;
+            border: 1px solid #d4a373;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .font-option:hover {
+            background: #f3e9e1;
+        }
+
+        .font-option.selected {
+            background: #d4a373;
+            color: white;
+        }
+
+        .preview-area {
+            min-height: 200px;
+            border: 1px dashed #d4a373;
+            border-radius: 10px;
+            margin: 20px 0;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-text {
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .upload-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #f3e9e1;
+            border: 1px dashed #d4a373;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background: #e8d5c5;
+        }
+
+        /* ===== Confetti Effect ===== */
+        #confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f00;
+            border-radius: 50%;
+            animation: confettiFall 5s linear forwards;
+            z-index: 10;
+        }
+
+        .confetti.heart {
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* ===== Responsive Design ===== */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 4.5rem;
+            }
+            .names {
+                font-size: 2.2rem;
+            }
+            .btn {
+                padding: 12px 30px;
+            }
+            .details-screen {
+                padding: 15px;
+                padding-bottom: 30px;
+            }
+            .details-content {
+                padding: 20px;
+            }
+            .action-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            .rsvp-icon {
+                width: 28px;
+                height: 28px;
+            }
+            .background-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 3.5rem;
+            }
+            .names {
+                font-size: 1.8rem;
+            }
+            .btn {
+                padding: 10px 25px;
+                font-size: 1rem;
+            }
+            .details-screen {
+                padding: 10px;
+                padding-bottom: 20px;
+            }
+            .details-content {
+                padding: 15px;
+            }
+            .action-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            .rsvp-icon {
+                width: 24px;
+                height: 24px;
+            }
+            .timeline-item {
+                flex-direction: column;
+            }
+            .timeline-time {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="welcome">
-        <h1>Hari weds Meena</h1>
-        <p>Join us on 24th Jan 2026</p>
-    </div>
-
-    <section class="details">
-        <h2>Wedding Details</h2>
-        <p><strong>Date:</strong> 24th Jan 2026</p>
-        <p><strong>Venue:</strong> Sri Parasakthi Amman Temple Kluang, Johor</p>
-        <p><strong>Time:</strong> 8:00 AM - 12:00 PM</p>
-        <div id="countdown"></div>
-    </section>
-
-    <section class="rsvp">
-        <h2>RSVP</h2>
-        <form>
-            <input type="text" placeholder="Your Name" required>
-            <input type="number" placeholder="Number of Guests" required>
-            <button type="submit">Submit</button>
-        </form>
-    </section>
-
-    <section class="gallery">
-        <h2>Our Moments</h2>
-        <div class="gallery-images">
-            <img src="https://via.placeholder.com/300x200" alt="Couple Photo">
-            <img src="https://via.placeholder.com/300x200" alt="Couple Photo">
+    <div class="container">
+        <!-- Main Screen -->
+        <div class="main-screen" id="mainScreen">
+            <div class="content">
+                <h1>Save the Date</h1>
+                <div class="names">Meena & Hari</div>
+                <button class="btn" id="detailsBtn">
+                    <i class="fas fa-heart"></i> View Details
+                </button>
+            </div>
         </div>
-    </section>
-
-    <script src="script.js"></script>
+        
+        <!-- Details Screen -->
+        <div class="details-screen" id="detailsScreen">
+            <div class="details-content">
+                <div class="couple-info">
+                    <h2>Meena & Hari</h2>
+                    <p>Together with their families</p>
+                </div>
+                
+                <div class="wedding-info">
+                    <p>We cordially invite you to celebrate our wedding</p>
+                    <p><strong>Date:</strong> 24 January 2026</p>
+                    <p><strong>Time:</strong> 7:30 AM - 1:00 PM</p>
+                    <p><strong>Venue:</strong> Sri Parasakthi Amman Temple, Kluang, Johor</p>
+                </div>
+                
+                <div class="timeline">
+                    <h3>Wedding Timeline</h3>
+                    <div class="timeline-item">
+                        <div class="timeline-time">7:30 - 8:30 AM</div>
+                        <div class="timeline-event">Arrival, welcome, and breakfast</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">8:30 - 10:30 AM</div>
+                        <div class="timeline-event">Wedding ceremony</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">10:30 - 1:00 PM</div>
+                        <div class="timeline-event">Reception and Lunch</div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn rsvp-btn" id="rsvpBtn" title="RSVP">
+                        <svg class="rsvp-icon" viewBox="0 0 32 32">
+                            <circle cx="16" cy="16" r="15" fill="none" stroke="white" stroke-width="2"/>
+                            <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="8" font-family="'Montserrat', sans-serif" font-weight="600" fill="white">RSVP</text>
+                        </svg>
+                    </button>
+                    <button class="action-btn gift-btn" id="giftBtn" title="E-Gift">
+                        <i class="fas fa-gift"></i>
+                    </button>
+                    <button class="action-btn map-btn" id="mapBtn" title="Map to Venue">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </button>
+                    <button class="action-btn contact-btn" id="contactBtn" title="Contact Us">
+                        <i class="fas fa-phone-alt"></i>
+                    </button>
+                </div>
+                <button class="greetings-btn" id="greetingsBtn">
+                    <i class="fas fa-heart"></i> Leave Greetings
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- E-Gift Modal -->
+    <div class="modal" id="giftModal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeGiftModal">×</button>
+            <h2>Send E-Gift</h2>
+            <p>Select the recipient to reveal QR code</p>
+            
+            <div class="recipient-btns">
+                <button class="recipient-btn" id="meenaBtn">
+                    <i class="fas fa-female"></i> Meena
+                </button>
+                <button class="recipient-btn" id="hariBtn">
+                    <i class="fas fa-male"></i> Hari
+                </button>
+            </div>
+            
+            <div class="qr-code" id="qrCodeContainer">
+                <img src="https://kaleoz-kchat.seagmcdn.com/guide_content/images/prod/202307/oss-3e8d520351a6f1826a6ce212866aec30.png" alt="QR Code">
+                <p id="recipientName"></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map Modal -->
+    <div class="modal" id="mapModal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeMapModal">×</button>
+            <h2>Map to Venue</h2>
+            <p>Sri Parasakthi Amman Temple, Kluang, Johor</p>
+            
+            <div id="map"></div>
+            
+            <div class="map-options">
+                <a href="https://maps.app.goo.gl/cJ8P3KYrWQx5YQF8A" class="map-option" target="_blank">
+                    <i class="fab fa-google"></i> Google Maps
+                </a>
+                <a href="https://ul.waze.com/ul?place=ChIJT9r3SdFt0DEROUWbQGNdy3Y&ll=2.01609710%2C103.31997870&navigate=yes&utm_campaign=default&utm_source=waze_website&utm_medium=lm_share_location" class="map-option" target="_blank">
+                    <i class="fab fa-waze"></i> Waze
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Modal -->
+    <div class="modal" id="contactModal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeContactModal">×</button>
+            <h2>Contact Us</h2>
+            
+            <div class="contact-list">
+                <h3>Bride Contact</h3>
+                <div class="contact-item">
+                    Meena
+                    <a href="https://wa.me/60123456789" target="_blank">
+                        WhatsApp <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="whatsapp-icon">
+                    </a>
+                </div>
+                
+                <h3>Groom Contact</h3>
+                <div class="contact-item">
+                    Hari
+                    <a href="https://wa.me/60129876543" target="_blank">
+                        WhatsApp <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="whatsapp-icon">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- RSVP Modal -->
+    <div class="modal" id="rsvpModal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeRsvpModal">×</button>
+            <h2>RSVP</h2>
+            <p>Kindly respond by 10 January 2026</p>
+            
+            <form class="rsvp-form" id="rsvpForm">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="attendance">Will you attend?</label>
+                    <select id="attendance" name="attendance" required>
+                        <option value="">Select option</option>
+                        <option value="yes">Yes, I'll be there</option>
+                        <option value="no">Sorry, can't make it</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="guests">Number of Guests</label>
+                    <input type="number" id="guests" name="guests" min="1" value="1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="dietary">Dietary Preferences</label>
+                    <select id="dietary" name="dietary">
+                        <option value="none">No restrictions</option>
+                        <option value="vegetarian">Vegetarian</option>
+                        <option value="vegan">Vegan</option>
+                        <option value="halal">Halal</option>
+                        <option value="other">Other (please specify)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="otherDietaryGroup" style="display: none;">
+                    <label for="otherDietary">Please specify dietary needs</label>
+                    <input type="text" id="otherDietary" name="otherDietary">
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message for the couple</label>
+                    <textarea id="message" name="message" rows="3"></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">Submit RSVP</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Greetings Modal -->
+    <div class="modal" id="greetingsModal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeGreetingsModal">×</button>
+            <h2>Leave Your Greetings</h2>
+            <p>Share your blessings for the couple</p>
+            
+            <form class="greetings-form" id="greetingsForm">
+                <div class="form-group">
+                    <label for="greetingName">Your Name</label>
+                    <input type="text" id="greetingName" name="greetingName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="greetingMessage">Your Message</label>
+                    <textarea id="greetingMessage" name="greetingMessage" rows="4" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Choose Background</label>
+                    <div class="background-options">
+                        <div class="bg-option selected" style="background: url('https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;" data-bg="url('https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="bg-option" style="background: url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;" data-bg="url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="bg-option" style="background: url('https://images.unsplash.com/photo-1580894732444-8ecded7900cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;" data-bg="url('https://images.unsplash.com/photo-1580894732444-8ecded7900cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="bg-option" style="background: url('https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;" data-bg="url('https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="bg-option" style="background: url('https://images.unsplash.com/photo-1516641051054-9df6a1aad654?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;" data-bg="url('https://images.unsplash.com/photo-1516641051054-9df6a1aad654?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="bg-option" style="background: url('https://images.unsplash.com/photo-1516641051054-9df6a1aad654?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;" data-bg="url('https://images.unsplash.com/photo-1516641051054-9df6a1aad654?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="bg-option" style="background: url('https://images.unsplash.com/photo-1516641051054-9df6a1aad654?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;" data-bg="url('https://images.unsplash.com/photo-1516641051054-9df6a1aad654?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="bg-option" style="background: url('https://images.unsplash.com/photo-1516641051054-9df6a1aad654?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;" data-bg="url('https://images.unsplash.com/photo-1516641051054-9df6a1aad654?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                        <div class="bg-option" style="background: url('https://images.unsplash.com/photo-1516641051054-9df6a1aad654?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;" data-bg="url('https://images.unsplash.com/photo-1516641051054-9df6a1aad654?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Or upload your own background</label>
+                    <label for="bgUpload" class="upload-btn">
+                        <i class="fas fa-upload"></i> Choose Image
+                        <input type="file" id="bgUpload" accept="image/*" style="display: none;">
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label>Choose Font</label>
+                    <div class="font-options">
+                        <div class="font-option selected" data-font="'Tangerine', cursive">Tangerine</div>
+                        <div class="font-option" data-font="'Playfair Display', serif">Playfair</div>
+                        <div class="font-option" data-font="'Montserrat', sans-serif">Montserrat</div>
+                        <div class="font-option" data-font="'Arial', sans-serif">Arial</div>
+                        <div class="font-option" data-font="'Georgia', serif">Georgia</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Preview</label>
+                    <div class="preview-area" id="previewArea" style="background: url('https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;">
+                        <div class="preview-text" id="previewText" style="font-family: 'Tangerine', cursive; color: white; font-size: 2rem;">
+                            Your greeting will appear here
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">Submit Greeting</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Confetti Elements -->
+    <div id="confetti-container"></div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // DOM Elements
+        const detailsBtn = document.getElementById('detailsBtn');
+        const mainScreen = document.getElementById('mainScreen');
+        const detailsScreen = document.getElementById('detailsScreen');
+        const giftBtn = document.getElementById('giftBtn');
+        const mapBtn = document.getElementById('mapBtn');
+        const contactBtn = document.getElementById('contactBtn');
+        const rsvpBtn = document.getElementById('rsvpBtn');
+        const greetingsBtn = document.getElementById('greetingsBtn');
+        const giftModal = document.getElementById('giftModal');
+        const mapModal = document.getElementById('mapModal');
+        const contactModal = document.getElementById('contactModal');
+        const rsvpModal = document.getElementById('rsvpModal');
+        const greetingsModal = document.getElementById('greetingsModal');
+        const closeGiftModal = document.getElementById('closeGiftModal');
+        const closeMapModal = document.getElementById('closeMapModal');
+        const closeContactModal = document.getElementById('closeContactModal');
+        const closeRsvpModal = document.getElementById('closeRsvpModal');
+        const closeGreetingsModal = document.getElementById('closeGreetingsModal');
+        const meenaBtn = document.getElementById('meenaBtn');
+        const hariBtn = document.getElementById('hariBtn');
+        const qrCodeContainer = document.getElementById('qrCodeContainer');
+        const recipientName = document.getElementById('recipientName');
+        const rsvpForm = document.getElementById('rsvpForm');
+        const greetingsForm = document.getElementById('greetingsForm');
+        const dietarySelect = document.getElementById('dietary');
+        const otherDietaryGroup = document.getElementById('otherDietaryGroup');
+        const bgOptions = document.querySelectorAll('.bg-option');
+        const fontOptions = document.querySelectorAll('.font-option');
+        const bgUpload = document.getElementById('bgUpload');
+        const previewArea = document.getElementById('previewArea');
+        const previewText = document.getElementById('previewText');
+        const greetingMessage = document.getElementById('greetingMessage');
+        const confettiContainer = document.getElementById('confetti-container');
+        
+        // Initialize Map
+        function initMap() {
+            const map = L.map('map').setView([2.01609710, 103.31997870], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            L.marker([2.01609710, 103.31997870]).addTo(map)
+                .bindPopup('Sri Parasakthi Amman Temple, Kluang, Johor')
+                .openPopup();
+        }
+        
+        // Create Confetti
+        function createConfetti() {
+            const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
+            confettiContainer.innerHTML = '';
+            for (let i = 0; i < 40; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                if (Math.random() > 0.5) confetti.classList.add('heart');
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+                confetti.style.animationDelay = Math.random() * 5 + 's';
+                confettiContainer.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 8000);
+            }
+        }
+        
+        // Event Listeners
+        detailsBtn.addEventListener('click', () => {
+            mainScreen.style.transform = 'translateY(-100%)';
+            mainScreen.style.opacity = '0';
+            detailsScreen.classList.add('active');
+            createConfetti();
+        });
+        
+        giftBtn.addEventListener('click', () => {
+            giftModal.classList.add('active');
+        });
+        
+        mapBtn.addEventListener('click', () => {
+            mapModal.classList.add('active');
+            initMap();
+        });
+        
+        contactBtn.addEventListener('click', () => {
+            contactModal.classList.add('active');
+        });
+        
+        rsvpBtn.addEventListener('click', () => {
+            rsvpModal.classList.add('active');
+        });
+        
+        greetingsBtn.addEventListener('click', () => {
+            greetingsModal.classList.add('active');
+        });
+        
+        closeGiftModal.addEventListener('click', () => {
+            giftModal.classList.remove('active');
+            qrCodeContainer.classList.remove('active');
+        });
+        
+        closeMapModal.addEventListener('click', () => {
+            mapModal.classList.remove('active');
+        });
+        
+        closeContactModal.addEventListener('click', () => {
+            contactModal.classList.remove('active');
+        });
+        
+        closeRsvpModal.addEventListener('click', () => {
+            rsvpModal.classList.remove('active');
+        });
+        
+        closeGreetingsModal.addEventListener('click', () => {
+            greetingsModal.classList.remove('active');
+        });
+        
+        meenaBtn.addEventListener('click', () => {
+            recipientName.textContent = 'Scan to send gift to Meena';
+            qrCodeContainer.classList.add('active');
+        });
+        
+        hariBtn.addEventListener('click', () => {
+            recipientName.textContent = 'Scan to send gift to Hari';
+            qrCodeContainer.classList.add('active');
+        });
+        
+        dietarySelect.addEventListener('change', (e) => {
+            if (e.target.value === 'other') {
+                otherDietaryGroup.style.display = 'block';
+            } else {
+                otherDietaryGroup.style.display = 'none';
+            }
+        });
+        
+        bgOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                bgOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                previewArea.style.background = option.getAttribute('data-bg');
+            });
+        });
+        
+        fontOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                fontOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                previewText.style.fontFamily = option.getAttribute('data-font');
+            });
+        });
+        
+        bgUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    previewArea.style.background = `url(${event.target.result}) center/cover`;
+                    bgOptions.forEach(opt => opt.classList.remove('selected'));
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        greetingMessage.addEventListener('input', (e) => {
+            previewText.textContent = e.target.value || 'Your greeting will appear here';
+        });
+        
+        rsvpForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Thank you for your RSVP! We look forward to seeing you.');
+            rsvpModal.classList.remove('active');
+            rsvpForm.reset();
+        });
+        
+        greetingsForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Thank you for your lovely message! The couple will cherish it.');
+            greetingsModal.classList.remove('active');
+            greetingsForm.reset();
+            previewText.textContent = 'Your greeting will appear here';
+        });
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === giftModal) {
+                giftModal.classList.remove('active');
+                qrCodeContainer.classList.remove('active');
+            }
+            if (e.target === mapModal) {
+                mapModal.classList.remove('active');
+            }
+            if (e.target === contactModal) {
+                contactModal.classList.remove('active');
+            }
+            if (e.target === rsvpModal) {
+                rsvpModal.classList.remove('active');
+            }
+            if (e.target === greetingsModal) {
+                greetingsModal.classList.remove('active');
+            }
+        });
+        
+        // Animation on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.querySelector('.content').style.animation = 'fadeIn 1.5s ease';
+            }, 500);
+        });
+    </script>
 </body>
 </html>
