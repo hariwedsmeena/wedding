@@ -6,7 +6,7 @@
     <title>Meena & Hari's Wedding</title>
     <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@700&family=Playfair+Display:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https Esse://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -340,8 +340,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            display/keys.json:1:1: error: Expected value but found end of file
-            flex;
+            display: flex;
             justify-content: center;
             align-items: center;
             z-index: 100;
@@ -663,7 +662,7 @@
             background: #e8d5c5;
         }
 
-        /* ===== Confetti Effect ===== */
+        /* ===== Flower Effect ===== */
         #confetti-container {
             position: fixed;
             top: 0;
@@ -674,23 +673,16 @@
             z-index: 10;
         }
 
-        .confetti {
+        .flower {
             position: absolute;
-            width: 10px;
-            height: 10px;
-            background: #f00;
-            border-radius: 50%;
-            animation: confettiFall 5s linear forwards;
+            font-size: 20px;
+            animation: flowerFall 5s linear forwards;
             z-index: 10;
         }
 
-        .confetti.heart {
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-        }
-
-        @keyframes confettiFall {
+        @keyframes flowerFall {
             0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
 
         /* ===== Responsive Design ===== */
@@ -1131,20 +1123,18 @@
                 .openPopup();
         }
         
-        // Create Confetti
+        // Create Flower Effect
         function createConfetti() {
-            const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
             confettiContainer.innerHTML = '';
             for (let i = 0; i < 40; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                if (Math.random() > 0.5) confetti.classList.add('heart');
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
-                confetti.style.animationDelay = Math.random() * 5 + 's';
-                confettiContainer.appendChild(confetti);
-                setTimeout(() => confetti.remove(), 8000);
+                const flower = document.createElement('div');
+                flower.className = 'flower';
+                flower.innerHTML = '🌹';
+                flower.style.left = Math.random() * 100 + 'vw';
+                flower.style.animationDuration = Math.random() * 3 + 2 + 's';
+                flower.style.animationDelay = Math.random() * 5 + 's';
+                confettiContainer.appendChild(flower);
+                setTimeout(() => flower.remove(), 8000);
             }
         }
         
